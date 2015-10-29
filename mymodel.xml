@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:j.0="http://chriskvik.uia.io/ontology#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+  <owl:Class rdf:about="http://chriskvik.uia.io/ontology#course"/>
+  <owl:Class rdf:about="http://chriskvik.uia.io/ontology#learningtype"/>
+  <owl:Class rdf:about="http://chriskvik.uia.io/ontology#topics">
+    <j.0:hasSubtopic>
+      <j.0:topics rdf:about="http://chriskvik.uia.io/ontology#FAG">
+        <j.0:hasPracticalPart>
+          <j.0:learningtype rdf:about="http://chriskvik.uia.io/ontology#presentation">
+            <j.0:hasPracticalPart rdf:resource="http://chriskvik.uia.io/ontology#FAG"/>
+          </j.0:learningtype>
+        </j.0:hasPracticalPart>
+        <j.0:hasRequirement>
+          <j.0:topics rdf:about="http://chriskvik.uia.io/ontology#Android">
+            <j.0:isRequirement rdf:resource="http://chriskvik.uia.io/ontology#FAG"/>
+            <j.0:hasTheoreticalPart rdf:resource="http://chriskvik.uia.io/ontology#presentation"/>
+            <j.0:hasSubtopic>
+              <j.0:topics rdf:about="http://chriskvik.uia.io/ontology#Java">
+                <j.0:isRequirement rdf:resource="http://chriskvik.uia.io/ontology#Android"/>
+                <j.0:isSubtopicOf rdf:resource="http://chriskvik.uia.io/ontology#Android"/>
+              </j.0:topics>
+            </j.0:hasSubtopic>
+            <j.0:hasRequirement rdf:resource="http://chriskvik.uia.io/ontology#Java"/>
+          </j.0:topics>
+        </j.0:hasRequirement>
+      </j.0:topics>
+    </j.0:hasSubtopic>
+    <j.0:hasSubtopic rdf:resource="http://chriskvik.uia.io/ontology#Java"/>
+    <j.0:hasSubtopic rdf:resource="http://chriskvik.uia.io/ontology#Android"/>
+  </owl:Class>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#isPracticalPartOf">
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasPracticalPart"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasTheoreticalPart">
+    <rdfs:domain rdf:resource="http://chriskvik.uia.io/ontology#topics"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasRequirement">
+    <rdfs:domain rdf:resource="http://chriskvik.uia.io/ontology#topics"/>
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#isRequirement"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasTopic">
+    <rdfs:domain rdf:resource="http://chriskvik.uia.io/ontology#course"/>
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#isTopicIn"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#isTheoreticalPartOf">
+    <owl:inverseOf rdf:resource="http://chriskvik.uia.io/ontology#hasTheoreticalPart"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#isSubtopicOf">
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasSubtopic"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasPracticalPart">
+    <rdfs:domain rdf:resource="http://chriskvik.uia.io/ontology#topics"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="http://chriskvik.uia.io/ontology#hasSubtopic">
+    <rdfs:domain rdf:resource="http://chriskvik.uia.io/ontology#topics"/>
+  </owl:ObjectProperty>
+  <j.0:course rdf:about="http://chriskvik.uia.io/ontology#IKT9999999">
+    <j.0:hasTopic rdf:resource="http://chriskvik.uia.io/ontology#FAG"/>
+  </j.0:course>
+  <j.0:course rdf:about="http://chriskvik.uia.io/ontology#IKT001">
+    <j.0:hasTopic rdf:resource="http://chriskvik.uia.io/ontology#Android"/>
+  </j.0:course>
+  <j.0:learningtype rdf:about="http://chriskvik.uia.io/ontology#lecture"/>
+</rdf:RDF>

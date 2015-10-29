@@ -1,0 +1,98 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+
+<http://chriskvik.uia.io/ontology#isTheoreticalPartOf>
+        a              owl:ObjectProperty ;
+        owl:inverseOf  <http://chriskvik.uia.io/ontology#hasTheoreticalPart> .
+
+<http://chriskvik.uia.io/ontology#presentation>
+        a       <http://chriskvik.uia.io/ontology#learningtype> ;
+        <http://chriskvik.uia.io/ontology#hasPracticalPart>
+                <http://chriskvik.uia.io/ontology#FAG> .
+
+<http://chriskvik.uia.io/ontology#isRequirement>
+        a       owl:ObjectProperty .
+
+<http://chriskvik.uia.io/ontology#FAG>
+        a       <http://chriskvik.uia.io/ontology#topics> ;
+        <http://chriskvik.uia.io/ontology#hasPracticalPart>
+                <http://chriskvik.uia.io/ontology#presentation> ;
+        <http://chriskvik.uia.io/ontology#hasRequirement>
+                <http://chriskvik.uia.io/ontology#Android> .
+
+<http://chriskvik.uia.io/ontology#lecture>
+        a       <http://chriskvik.uia.io/ontology#learningtype> .
+
+<http://chriskvik.uia.io/ontology#isPracticalPartOf>
+        a              owl:ObjectProperty ;
+        owl:inverseOf  <http://chriskvik.uia.io/ontology#hasPracticalPart> .
+
+<http://chriskvik.uia.io/ontology#Android>
+        a       <http://chriskvik.uia.io/ontology#topics> ;
+        <http://chriskvik.uia.io/ontology#hasRequirement>
+                <http://chriskvik.uia.io/ontology#Java> ;
+        <http://chriskvik.uia.io/ontology#hasSubtopic>
+                <http://chriskvik.uia.io/ontology#Java> ;
+        <http://chriskvik.uia.io/ontology#hasTheoreticalPart>
+                <http://chriskvik.uia.io/ontology#presentation> ;
+        <http://chriskvik.uia.io/ontology#isRequirement>
+                <http://chriskvik.uia.io/ontology#FAG> .
+
+<http://chriskvik.uia.io/ontology#hasPracticalPart>
+        a            owl:ObjectProperty ;
+        rdfs:domain  <http://chriskvik.uia.io/ontology#topics> .
+
+<http://chriskvik.uia.io/ontology#learningtype>
+        a       owl:Class .
+
+<http://chriskvik.uia.io/ontology#Java>
+        a       <http://chriskvik.uia.io/ontology#topics> ;
+        <http://chriskvik.uia.io/ontology#isRequirement>
+                <http://chriskvik.uia.io/ontology#Android> ;
+        <http://chriskvik.uia.io/ontology#isSubtopicOf>
+                <http://chriskvik.uia.io/ontology#Android> .
+
+<http://chriskvik.uia.io/ontology#IKT9999999>
+        a       <http://chriskvik.uia.io/ontology#course> ;
+        <http://chriskvik.uia.io/ontology#hasTopic>
+                <http://chriskvik.uia.io/ontology#FAG> .
+
+<http://chriskvik.uia.io/ontology#topics>
+        a       owl:Class ;
+        <http://chriskvik.uia.io/ontology#hasSubtopic>
+                <http://chriskvik.uia.io/ontology#FAG> , <http://chriskvik.uia.io/ontology#Java> , <http://chriskvik.uia.io/ontology#Android> .
+
+<http://chriskvik.uia.io/ontology#hasTheoreticalPart>
+        a            owl:ObjectProperty ;
+        rdfs:domain  <http://chriskvik.uia.io/ontology#topics> .
+
+<http://chriskvik.uia.io/ontology#IKT001>
+        a       <http://chriskvik.uia.io/ontology#course> ;
+        <http://chriskvik.uia.io/ontology#hasTopic>
+                <http://chriskvik.uia.io/ontology#Android> .
+
+<http://chriskvik.uia.io/ontology#course>
+        a       owl:Class .
+
+<http://chriskvik.uia.io/ontology#hasSubtopic>
+        a            owl:ObjectProperty ;
+        rdfs:domain  <http://chriskvik.uia.io/ontology#topics> .
+
+<http://chriskvik.uia.io/ontology#isSubtopicOf>
+        a              owl:ObjectProperty ;
+        owl:inverseOf  <http://chriskvik.uia.io/ontology#hasSubtopic> .
+
+<http://chriskvik.uia.io/ontology#hasRequirement>
+        a              owl:ObjectProperty ;
+        rdfs:domain    <http://chriskvik.uia.io/ontology#topics> ;
+        owl:inverseOf  <http://chriskvik.uia.io/ontology#isRequirement> .
+
+<http://chriskvik.uia.io/ontology#isTopicIn>
+        a       owl:ObjectProperty .
+
+<http://chriskvik.uia.io/ontology#hasTopic>
+        a              owl:ObjectProperty ;
+        rdfs:domain    <http://chriskvik.uia.io/ontology#course> ;
+        owl:inverseOf  <http://chriskvik.uia.io/ontology#isTopicIn> .
