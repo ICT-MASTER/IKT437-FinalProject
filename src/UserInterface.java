@@ -1,22 +1,21 @@
-import oracle.jrockit.jfr.JFR;
+import com.fasterxml.jackson.databind.deser.Deserializers;
 import org.apache.jena.ontology.Individual;
 import org.apache.jena.ontology.ObjectProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.impl.ObjectPropertyImpl;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.vocabulary.RDF;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,16 +46,7 @@ public class UserInterface extends JFrame {
     private JTextArea sparqlQuery;
     private JComboBox isTheoreticalPartOf;
 
-    // Properties
-    ObjectProperty isSubstopicOf;
-    ObjectProperty hasSubtopic;
-    ObjectProperty hasRequirement;
-    ObjectProperty isRequirement;
-    ObjectProperty hasTopic;
-    ObjectProperty isTopicIn;
 
-    ObjectProperty isCourseSubclass;
-    ObjectProperty hasCourseSubclas;
     // Our resource...
     Individual newResource;
     List<String> depends = new ArrayList<>();
@@ -74,212 +64,98 @@ public class UserInterface extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
-        // NS
-        String uri = "http://chriskvik.uia.io/ontology#";
-
         // Create ontology model
         model = ModelFactory.createOntologyModel();
 
-        /******************************************************************************
-         *
-         *   CLASSES
-         *
-         ******************************************************************************/
+        // Intialize Vocabulary
+        VOC cVocabulary = new VOC(model);
+        model = cVocabulary.updateModel();
 
-        // Topic related modelling
-        OntClass topics
-                = model.createClass(uri + "topics");
-
-        // Course class
-        OntClass course
-                = model.createClass(uri + "course");
-
-        // Course class
-        OntClass learningType
-                = model.createClass(uri + "learningtype");
+        // Create the neccesarry classes
+        BaseClasses bClass = new BaseClasses(model);
+        bClass.createDummyData();
+        model = bClass.updateModel();
 
 
-        /******************************************************************************
-         *
-         *   INDIVIDUALS
-         *
-         ******************************************************************************/
 
-        Individual advancedSubject
-                = model.createIndividual(uri + "Android", topics);
-
-        Individual baseSubject
-                = model.createIndividual(uri + "Java", topics);
-
-        Individual exampleCourse
-                = model.createIndividual(uri + "IKT001", course);
-
-        Individual presentation
-                = model.createIndividual(uri + "presentation", learningType);
-
-        Individual lecture
-                = model.createIndividual(uri + "lecture", learningType);
-
-
-        /******************************************************************************
-         *
-         *   TOPICS
-         *
-         ******************************************************************************/
-
-        // Properties
-        ObjectProperty isSubstopicOf = model.createObjectProperty(uri + "isSubtopicOf");
-        hasSubtopic = model.createObjectProperty(uri + "hasSubtopic");
-        hasCourseSubclas = model.createObjectProperty(uri + "hasCourseSubclass");
-        isCourseSubclass = model.createObjectProperty(uri + "isCourseSubclass");
-        ObjectProperty hasRequirement = model.createObjectProperty(uri + "hasRequirement");
-        ObjectProperty isRequirement = model.createObjectProperty(uri + "isRequirement");
-
-        ObjectProperty isTheoreticalPartOf = model.createObjectProperty(uri + "isTheoreticalPartOf");
-        ObjectProperty hasTheoreticalPart = model.createObjectProperty(uri + "hasTheoreticalPart");
-        ObjectProperty isPracticalPartOf = model.createObjectProperty(uri + "isPracticalPartOf");
-        ObjectProperty hasPracticalPart = model.createObjectProperty(uri + "hasPracticalPart");
-
-        hasTopic = model.createObjectProperty(uri + "hasTopic");
-        isTopicIn = model.createObjectProperty(uri + "isTopicIn");
-
-
-        /**
-         *  PROPERTIES -> PROPERTIES
-         */
-
-        // Inverse of properties
-        isSubstopicOf.addInverseOf(hasSubtopic);
-        isCourseSubclass.addInverseOf(hasCourseSubclas);
-        hasRequirement.addInverseOf(isRequirement);
-        isTheoreticalPartOf.addInverseOf(hasTheoreticalPart);
-        isPracticalPartOf.addInverseOf(hasPracticalPart);
-        hasTopic.addInverseOf(isTopicIn);
-
-
-        // The domain of the properties. For example a topic HAS a subtopic AND a course has a PRACTICAL PART.
-        hasSubtopic.addDomain(topics);
-        hasCourseSubclas.addDomain(course);
-        hasRequirement.addDomain(topics);
-        hasTopic.addDomain(course);
-        hasTheoreticalPart.addDomain(topics);
-        hasPracticalPart.addDomain(topics);
-
-
-        // Add all topics as subopics of the main topic.
-        model.add(topics, hasSubtopic, advancedSubject);
-        model.add(topics, hasSubtopic, baseSubject);
-
-
-        // Relations between topics
-        advancedSubject.setPropertyValue(hasRequirement, baseSubject);
-        advancedSubject.setPropertyValue(hasSubtopic, baseSubject);
-        baseSubject.setPropertyValue(isSubstopicOf, advancedSubject);
-        baseSubject.setPropertyValue(isRequirement, advancedSubject);
-
-        // Relations between courses
-
-
-        /******************************************************************************
-         *
-         *   COURSES
-         *
-         * ******************************************************************************/
-
-        // Example course with a topic with a defined lecture type.
-        exampleCourse.setPropertyValue(hasTopic, advancedSubject);
-        advancedSubject.setPropertyValue(hasTheoreticalPart, presentation);
-        model.add(course, hasCourseSubclas, exampleCourse);
-
-
-        populateDropDown(model, topics, course);
-
-
+        populateDropDown(model, model.getOntClass(OProps.TOPIC), model.getOntClass(OProps.COURSE));
 
 
         createTopicButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                System.out.println(tabs.getSelectedIndex());
 
-                if(tabs.getSelectedIndex() == 1) {
-                    // Create resouce..
+                if (tabs.getSelectedIndex() == 1) {
+
+                    /*
+                     CREATE A NEW TOPIC
+                     */
                     String resName = newTopic.getText();
-                    newResource = model.createIndividual(uri + resName, topics);
-                    model.add(topics, hasSubtopic, newResource);
+
+                    Topic newTopic = new Topic();
+                    newTopic.setName(resName);
 
                     if (!depends.isEmpty()) {
-                        for (String item : depends) {
 
-                            newResource.setPropertyValue(hasRequirement, model.getIndividual(item));
-                            model.getIndividual(item).setPropertyValue(isRequirement, newResource);
-
-
+                        for (String s : depends) {
+                            newTopic.setRequirements(model.getIndividual(s));
                         }
                     }
-
                     if (!subtopics.isEmpty()) {
-                        for (String item : subtopics) {
-                            newResource.setPropertyValue(isSubstopicOf, model.getIndividual(item));
-                            model.getIndividual(item).setPropertyValue(isSubstopicOf, newResource);
+                        for (String s : subtopics) {
+                            newTopic.setSubtopic(model.getIndividual(s));
                         }
                     }
 
                     if (!lectureType.isEmpty()) {
-                        for (String item : lectureType) {
+                        for (String s : lectureType) {
+                            if (s.equals("presentation")) {
+                                newTopic.setPracticalPart(model.getIndividual(OProps.presentation));
+                            } else {
+                                newTopic.setTeoreticalPart(model.getIndividual(OProps.written_exam));
 
-                            if (item.equals("presentation")) {
-                                newResource.setPropertyValue(hasPracticalPart, model.getIndividual(uri + item));
-                                model.getIndividual(uri + item).setPropertyValue(hasPracticalPart, newResource);
-
-                            } else if (item.equals("lecture")) {
-                                newResource.setPropertyValue(hasTheoreticalPart, model.getIndividual(uri + item));
-                                model.getIndividual(uri + item).setPropertyValue(hasTheoreticalPart, newResource);
                             }
                         }
                     }
 
+                    Triple newTopicSave = new Triple(model);
+                    newTopicSave.addTopic(newTopic);
+                    model = newTopicSave.getModel();
+
+
                     console.append("Created topic " + resName + "\n");
+                    populateDropDown(model, model.getOntClass(OProps.TOPIC), model.getOntClass(OProps.COURSE));
 
-                }
 
-                else if (tabs.getSelectedIndex() == 0) {
+                } else if (tabs.getSelectedIndex() == 0) {
 
                     String name = courName.getText();
+                    Course newCourse = new Course();
+                    newCourse.setCourseName(name);
 
-                    Individual newCourse
-                            = model.createIndividual(uri + name, course);
 
-                    model.add(course, hasCourseSubclas, newCourse);
-                    for(String item : hasTopicList) {
-                        newCourse.addProperty(hasTopic,model.getIndividual(item));
+                    for (String item : hasTopicList) {
+                        newCourse.setTopic(model.getIndividual(item));
                     }
+
+                    Triple newCourseTriple = new Triple(model);
+                    newCourseTriple.addCourse(newCourse);
+                    model = newCourseTriple.getModel();
 
                     console.append("Created course " + name + "\n");
 
+                } else if (tabs.getSelectedIndex() == 3) {
+                    runSparQL("");
                 }
 
-                else if (tabs.getSelectedIndex() == 3) {
-                    runSparQL();
-                }
-
-                populateDropDown(model, topics,course);
+                populateDropDown(model, model.getOntClass(OProps.TOPIC), model.getOntClass(OProps.COURSE));
 
                 depends.clear();
                 subtopics.clear();
-
-
-                NodeIterator allTopics = model.listObjectsOfProperty(topics, hasSubtopic);
-
-                while (allTopics.hasNext()) {
-                    System.out.println(allTopics.nextNode());
-                }
+                hasTopicList.clear();
 
             }
-
-
-
 
         });
 
@@ -287,36 +163,18 @@ public class UserInterface extends JFrame {
         saveOntButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                FileWriter out = null;
-                try {
-                    // XML format - long and verbose
-                    out = new FileWriter( "mymodel.xml" );
-                    model.write( out, "RDF/XML-ABBREV" );
-
-                    // OR Turtle format - compact and more readable
-                    // use this variant if you're not sure which to use!
-                    out = new FileWriter( "mymodel.ttl" );
-                    model.write( out, "Turtle" );
-                    System.out.println("Wrote ontology to file...");
-                } catch (IOException w) {
-                    w.printStackTrace();
-                } finally {
-                    if (out != null) {
-                        try {out.close();} catch (IOException ignore) {}
-                        console.append("WROTE ONTOLOGY TO FILE\n");
-
-                    }
+                ExportModel saveTask = new ExportModel(model);
+                if (saveTask.isStatus()) {
+                    console.append(" Wrote ontology to file [" + saveTask.getFilename() + "]");
                 }
             }
         });
 
-        // Listeners
         addDepend.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selected = dependsDrop.getSelectedItem().toString();
-                if(!selected.equals("None")) {
+                if (!selected.equals("None")) {
                     console.append(" Added dependency : " + selected + "\n");
                     depends.add(selected);
                 }
@@ -327,7 +185,7 @@ public class UserInterface extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                if(!lType.getSelectedItem().toString().equals("None")) {
+                if (!lType.getSelectedItem().toString().equals("None")) {
                     lectureType.add(lType.getSelectedItem().toString());
                     console.append(" Added lecture type : " + lType.getSelectedItem().toString() + "\n");
 
@@ -338,7 +196,7 @@ public class UserInterface extends JFrame {
         addCourseTopic.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!hasTopicD.getSelectedItem().toString().equals("None")) {
+                if (!hasTopicD.getSelectedItem().toString().equals("None")) {
                     String depend = hasTopicD.getSelectedItem().toString();
                     hasTopicList.add(depend);
 
@@ -348,13 +206,11 @@ public class UserInterface extends JFrame {
             }
         });
 
-
-
         addSub.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selected = subtopicOf.getSelectedItem().toString();
-                if(!selected.equals("None")) {
+                if (!selected.equals("None")) {
                     console.append(" Added subtopic : " + selected + "\n");
                     subtopics.add(selected);
 
@@ -371,7 +227,7 @@ public class UserInterface extends JFrame {
                 ind.remove();
                 console.append("Removed " + co + "\n");
 
-                populateDropDown(model,topics,course);
+                populateDropDown(model, model.getOntClass(OProps.TOPIC), model.getOntClass(OProps.COURSE));
             }
         });
 
@@ -384,32 +240,27 @@ public class UserInterface extends JFrame {
                 ind.remove();
                 console.append("Removed " + topic + "\n");
 
-                populateDropDown(model,topics,course);
+                populateDropDown(model, model.getOntClass(OProps.TOPIC), model.getOntClass(OProps.COURSE));
             }
 
         });
 
-
-
         tabs.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(tabs.getSelectedIndex() == 3) {
+                if (tabs.getSelectedIndex() == 3) {
                     createTopicButton.setText("Execute");
-                }
-                else {
+                } else {
                     createTopicButton.setText("Save");
 
                 }
             }
         });
+
     }
 
 
-
-
-
-    public void populateDropDown(Model model, Resource topics, Resource course) {
+    public void populateDropDown(OntModel model, Resource topics, Resource course) {
 
         dependsDrop.removeAllItems();
         subtopicOf.removeAllItems();
@@ -428,25 +279,18 @@ public class UserInterface extends JFrame {
         lType.addItem("presentation");
         lType.addItem("lecture");
 
-        ObjectProperty test = null;
-        NodeIterator allTopics = model.listObjectsOfProperty(topics, hasSubtopic);
-        NodeIterator allCourses = model.listObjectsOfProperty(course,hasCourseSubclas);
 
 
         List<String> resourceList = new ArrayList<>();
         List<String> courseList = new ArrayList<>();
 
-        while (allTopics.hasNext()) {
-            resourceList.add(allTopics.nextNode().toString());
-        }
-
-        while (allCourses.hasNext()) {
-            courseList.add(allCourses.nextNode().toString());
-        }
 
         dependsDrop.addItem("None");
         subtopicOf.addItem("None");
         hasTopicD.addItem("None");
+
+        courseList = internalSparQL(OProps.COURSE);
+        resourceList = internalSparQL(OProps.TOPIC);
 
         for (String item : resourceList) {
             dependsDrop.addItem(item);
@@ -462,10 +306,17 @@ public class UserInterface extends JFrame {
 
     }
 
-    public void runSparQL() {
+    public void runSparQL(String txt) {
+        txt = sparqlQuery.getText();
+        SQuery quer = new SQuery(txt, model);
 
+        console.append(quer.getResult());
+    }
 
-        // Retrieve all individuals of type class with SPARQL
+    public List<String> internalSparQL(String classType) {
+
+        String query = "SELECT ?x  WHERE { ?x rdf:type <"+classType+">}";
+
         String preQuery =
                 "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
                         "PREFIX owl: <http://www.w3.org/2002/07/owl#> " +
@@ -473,20 +324,17 @@ public class UserInterface extends JFrame {
                         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
                         "PREFIX chk: <http://chriskvik.uia.io/ontology#> ";
 
-        String queryEnd = sparqlQuery.getText();
-        System.out.println(preQuery+queryEnd);
-
-        Query query = QueryFactory.create(preQuery+queryEnd);
-        QueryExecution qe= QueryExecutionFactory.create(query, model);
+        Query q = QueryFactory.create(preQuery + query);
+        QueryExecution qe = QueryExecutionFactory.create(q, model);
         ResultSet resultset = qe.execSelect();
+        List<String> uriList = new ArrayList<String>();
 
+        while(resultset.hasNext()) {
+            QuerySolution row = resultset.nextSolution();
+            uriList.add(row.get("x").toString());
+        }
 
-       // ResultSetFormatter.out(System.out, resultset, query);
-        String resultsAsString = ResultSetFormatter.asText(resultset);
-        console.append(resultsAsString.replace("-",""));
-    }
-
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
+        return uriList;
     }
 }
+
