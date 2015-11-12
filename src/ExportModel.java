@@ -30,7 +30,7 @@ public class ExportModel {
             setStatus(false);
             w.printStackTrace();
         } finally {
-            if (out != null) {
+            if (out != null) { //hei
                 try {out.close();} catch (IOException ignore) {setStatus(false);}
 
             }
