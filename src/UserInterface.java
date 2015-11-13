@@ -1,21 +1,13 @@
-import com.fasterxml.jackson.databind.deser.Deserializers;
 import org.apache.jena.ontology.Individual;
-import org.apache.jena.ontology.ObjectProperty;
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
-import org.apache.jena.sparql.engine.main.OpExecutor;
-import org.apache.jena.util.iterator.ExtendedIterator;
-import org.apache.jena.vocabulary.RDF;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,15 +36,23 @@ public class UserInterface extends JFrame {
     private JButton removeTopic;
     private JButton removeCourse;
     private JTextArea sparqlQuery;
-    private JComboBox isTheoreticalPartOf;
+    private JComboBox courseDropdownQuery;
+    private JButton runCourseWithTopicQuery;
+    private JComboBox queryWichTopicNeededBox;
+    private JButton findRequirementsBtn;
+    private JComboBox topicsDropdownTopicsInCourse;
+    private JButton runTopicsInCourse;
+    private JComboBox dropdownSubtopicsOfATopic;
+    private JButton runFindSubtopicsOfATopic;
+    private JButton runListTopicsInCourse;
 
 
     // Our resource...
-    Individual newResource;
     List<String> depends = new ArrayList<>();
     List<String> subtopics = new ArrayList<>();
     List<String> lectureType = new ArrayList<>();
     List<String> hasTopicList = new ArrayList<>();
+    List<String> queryTopicsInCourseList = new ArrayList<>();
 
 
     OntModel model;
@@ -157,6 +157,60 @@ public class UserInterface extends JFrame {
 
             }
 
+        });
+
+        findRequirementsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String course = queryWichTopicNeededBox.getSelectedItem().toString();
+                String qer = "SELECT ?req  WHERE { <"+course+"> chk:hasTopic ?x . ?x chk:hasRequirement ?req .}";
+                SQuery quer = new SQuery(qer, model);
+                console.append(quer.getResult());
+
+            }
+        });
+
+        runTopicsInCourse.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String course = topicsDropdownTopicsInCourse.getSelectedItem().toString();
+                String qer = "SELECT ?topic  WHERE { <"+course+"> chk:hasTopic ?topic}";
+                SQuery quer = new SQuery(qer, model);
+                console.append(quer.getResult());
+            }
+        });
+
+        runFindSubtopicsOfATopic.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String topic = dropdownSubtopicsOfATopic.getSelectedItem().toString();
+                String qer = "SELECT ?topic  WHERE { <"+topic+"> <"+VOC.hasSubtopic+"> ?topic}";
+                SQuery quer = new SQuery(qer, model);
+                console.append(quer.getResult());
+            }
+        });
+
+
+
+
+
+        runCourseWithTopicQuery.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String topic = courseDropdownQuery.getSelectedItem().toString();
+                String query = "SELECT ?course ?LectureType  WHERE { ?course <"+VOC.hasTopic+"> <"+topic+"> . <"+topic+"> <"+VOC.hasTheoreticalPart+"> ?LectureType .}";
+
+                SQuery quer = new SQuery(query, model);
+                console.append(quer.getResult());
+
+            }
+        });
+
+        findRequirementsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                queryTopicsInCourseList.add(courseDropdownQuery.getSelectedItem().toString());
+            }
         });
 
 
@@ -274,6 +328,10 @@ public class UserInterface extends JFrame {
         topicBoxView.validate();
         courseBoxView.removeAllItems();
         courseBoxView.validate();
+        queryWichTopicNeededBox.removeAllItems();
+        topicsDropdownTopicsInCourse.removeAllItems();
+        dropdownSubtopicsOfATopic.removeAllItems();
+
         // Theoretical..
         lType.addItem("None");
         lType.addItem("presentation");
@@ -288,6 +346,7 @@ public class UserInterface extends JFrame {
         dependsDrop.addItem("None");
         subtopicOf.addItem("None");
         hasTopicD.addItem("None");
+        courseDropdownQuery.addItem("None");
 
         courseList = internalSparQL(OProps.COURSE);
         resourceList = internalSparQL(OProps.TOPIC);
@@ -297,10 +356,14 @@ public class UserInterface extends JFrame {
             subtopicOf.addItem(item);
             hasTopicD.addItem(item);
             topicBoxView.addItem(item);
+            courseDropdownQuery.addItem(item);
+            dropdownSubtopicsOfATopic.addItem(item);
         }
 
         for (String item : courseList) {
             courseBoxView.addItem(item);
+            queryWichTopicNeededBox.addItem(item);
+            topicsDropdownTopicsInCourse.addItem(item);
         }
 
 
@@ -335,6 +398,10 @@ public class UserInterface extends JFrame {
         }
 
         return uriList;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 }
 

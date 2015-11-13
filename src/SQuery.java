@@ -1,6 +1,9 @@
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Execute a query on a supplied model.
  */
@@ -10,6 +13,8 @@ public class SQuery {
 
 
     String result;
+    ResultSet resultset;
+
 
     public SQuery(String query, OntModel model) {
 
@@ -22,9 +27,24 @@ public class SQuery {
 
         Query q = QueryFactory.create(preQuery + query);
         QueryExecution qe= QueryExecutionFactory.create(q, model);
-        ResultSet resultset = qe.execSelect();
+        resultset = qe.execSelect();
 
         setResult(ResultSetFormatter.asText(resultset));
+    }
+
+    /**
+     *
+     * @return a single string list containing each uri from the query.
+     */
+    public List<String> getResultSingleLine() {
+        List<String> uriList = new ArrayList<String>();
+
+        while(resultset.hasNext()) {
+            QuerySolution row = resultset.nextSolution();
+            uriList.add(row.get("x").toString());
+        }
+
+        return uriList;
     }
 
 

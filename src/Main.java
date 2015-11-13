@@ -24,7 +24,7 @@ public class Main {
         }
 
         UserInterface ui = new UserInterface();
-        ui.setSize(450,500);
+        ui.setSize(500,600);
         ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
