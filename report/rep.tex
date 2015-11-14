@@ -1,0 +1,141 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage[]{algorithm2e}
+\usepackage[procnames]{listings}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{calc,through,backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.8}
+
+\usepackage{tcolorbox}
+
+
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+%% Header %%
+\rhead{  JENA, RDF, PROTEGE & SPARQL| IKT437}
+\lhead{Mandatory Exercise 1}
+\rfoot{Page \thepage}
+
+
+%% Front-page %%
+\title{Jena project application\\  \large Mandatory exercise part 3}
+\author{Christian Kråkevik, Per-Arne Andersen, Jahn Thomas Fidje \and Martin Hansen}
+\date{November 2015}
+
+
+\begin{document}
+
+%% PYTHON HILIGHT %%
+\definecolor{keywords}{RGB}{255,0,90}
+\definecolor{comments}{RGB}{0,0,113}
+\definecolor{red}{RGB}{160,0,0}
+\definecolor{green}{RGB}{0,150,0}
+
+\lstset{language=Java,
+        basicstyle=\ttfamily\small,
+        keywordstyle=\color{keywords},
+        commentstyle=\color{comments},
+        stringstyle=\color{red},
+        showstringspaces=false,
+        identifierstyle=\color{green},
+        procnamekeys={def,class}}
+
+
+\maketitle
+
+\newpage
+
+\section{Implementation}
+The solution is a java application created with the java-jena library. The solution consist of several classes allowing the user
+to create an ontology consisting of courses and topics with a custom vocabulary. \\
+
+
+\noindent The solution consist of several different classes, a brief explanation of the following classes below :
+
+\begin{description}
+  \item[Main] The class responsible for running the program.
+  \item[Topic] A class representing a single topic.
+  \item[Course] Identical to the Topic class, only for topics.
+  \item[UserInterface] UserInterface and logic.
+  \item[SQuery] Queries the ontology with sparql.
+  \item[BaseClasses] Spawns the ontology-classes (OntClass).
+  \item[Triple] Adds triples to the OntModel.
+  \item[VOC] The static vocabulary.
+  \item[OProps] Serving static vars like NS.
+  \item[ExportModel] Handles the saving of an OntModel to file (xml).
+  \end{description}
+
+  \vspace*{8px}
+
+
+  \noindent The pages below describes the application in detail, it is sorted by program-flow.
+
+
+\newpage
+
+\subsection {Main}
+The Main.class is only responsible for spawning the UserInterface, not a very interesting class.
+
+\subsection {UserInterface}
+The user interface spawns the UI and starts listening for user input. In the initialization it loads the ontology with some
+starting / dummy-data. It also creates the vocabulary using the VOC class. This class also controls user-input and handles
+the updating of the model.
+
+\subsection {VOC}
+The VOC or vocabulary class creates the static accessible ObjectProperties serving as the custom vocabulary for our ontology.
+It also handles the creation of inverse properties. Once created the model is sent back to UserInterface and updated.
+
+\subsection {BaseClasses}
+The next step is to populate the ontology with some basic-example classes. These are created in this class. It creates the TOPIC, COURSE and LEARNINGTYPE
+classes, these are used to spawn individuals later on. Once the classes are created we set the domain and ranges for the ObjectProperties in the VOC class.
+
+\subsection {Triple}
+The Triple class is the class responsible of submitting new triples to the model. This class takes in Individuals created from the Course and Topic class.
+It then assigns the correct ObjectProperties and adds it as a triple format to the model. The model is then sent back and updated in the UserInterface class.
+
+\subsection {SQuery}
+The application also allows querying with SPARQL. The SQuery.class implements a wrapper, making it possible to ask it to query a given string
+and return the result string. The SQuery is used in the raw-query tab (ui) and also as an internal query engine for the drop-down boxes (values) as
+well as the actual querying for the questions / use cases in Part-3 of this mandatory exercise.
+
+
+\newpage
+
+\subsection {OProps}
+OProps handles static settings which should be accessible trough the whole program. An example for this is the namespace, but also
+the URI for the master-classes like TOPIC and COURSE. This makes the code more modular, and enables the user to change namespaces fast.
+No variable value is hardcoded in the creation classes, (queries, triple-creation etc)!
+
+\subsection {ExportModel}
+The exportmodel handles exporting the Ontolgy to a file. The Ontology is exported in RDF/XML format. It is also written out in Turtle (ttl) format.
+
+\subsection {Final notes}
+The program is included in the hand-in. This .jar should be runnable for testing. A few demo-gifs is also included demonstrating the program.
+
+\subsubsection {Changes since part 2}
+- Rebuilt the code, splitting it into several classes, making it much more modular.
+\newline- Rebuilt the ontology creation method. Removed hardcoding of variables.
+\newline- Removed all ObjectProperty bugs, the ontology should now be correct.
+
+\subsubsection {Missing functions}
+- UC 3 is not implemented due to the design of the ontology. Only topics have requirements. (Our courses is more like a semester, and the topics is more like courses)
+
+
+
+
+
+\vspace*{8px}
+
+
+\end{document}
